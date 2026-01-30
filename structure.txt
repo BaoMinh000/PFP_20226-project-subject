@@ -1,0 +1,9 @@
+library_project/
+│
+├── models/
+│   └── book.py
+├── services/
+│   └── library_manager.py
+├── utils/
+│   └── file_handler.py
+└── main.py

@@ -1,0 +1,13 @@
+def show_menu():
+    print("\n========== LIBRARY BOOK MANAGEMENT ==========")
+    print("1. Add a new book")
+    print("2. Update book information")
+    print("3. Delete a book")
+    print("4. Display all books")
+    print("5. Search books")
+    print("6. Borrow a book")
+    print("7. Return a book")
+    print("8. List borrowed books")
+    print("9. Statistics & Reports")
+    print("0. Exit")
+    print("============================================")
