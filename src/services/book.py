@@ -38,8 +38,8 @@ def add_book(books):
     else:
         print("Failed to save data.")
 
-def update_book(library_manager, books):
-    pass
+# def update_book(library_manager, books):
+#     pass
 
 def delete_book(books):
     print("Deleting a book...")
@@ -95,6 +95,60 @@ def display_books(books):
 
     print(line)
 
-
+def update_book(books):
+    print("Updating a book...")
+    book_id = input("Enter the Book ID to update: ")
+    for book in books:
+        if str(book.book_id) == book_id:
+            new_title = input(f"Enter new title (current: {book.title}): ") or book.title
+            new_author = input(f"Enter new author (current: {book.author})): ") or book.author
+            new_category = input(f"Enter new category (current: {book.category}): ") or book.category
+            new_publication_year = input(f"Enter new publication year (current: {book._publication_year}): ") or book._publication_year
+            
+            book.title = new_title
+            book.author = new_author
+            book.category = new_category
+            book._publication_year = new_publication_year
+            save_to_file(books, DATA_BOOKS_FILE)
+            print(f"Book ID {book_id} updated successfully.")
+            return
+    print(f"Book ID {book_id} not found.")
+    
 def search_books(books):
-    pass
+    print("Searching for books...")
+    print("Enter search criteria (leave blank to skip):")
+    print("1. Title/Author/Category keyword")
+    title = input("Enter a keyword to search (title): ").lower()
+    Author = input("Enter a keyword to search (Author): ").lower()
+    Category = input("Enter a keyword to search (Category): ").lower()
+    
+    results = books
+    
+    for book in results:
+        if title:
+            new_list = []
+            print("Searching by title containing:", title)
+            for book in results:
+                if title.strip().lower() in book.title.lower():
+                    new_list.append(book)
+            results = new_list
+        if Author:
+            new_list = []
+            print("Searching by author containing:", Author)
+            for book in results:
+                if Author.strip().lower() in book.author.lower():
+                    new_list.append(book)
+            results = new_list
+        if Category:
+            new_list = []
+            print("Searching by category containing:", Category)
+            for book in results:
+                if Category.strip().lower() in book.category.lower():
+                    new_list.append(book)
+            results = new_list
+    
+    if results:
+        print(f"Found {len(results)} matching books:")
+        display_books(results)
+    else:
+        print("No matching books found.")

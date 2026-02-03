@@ -9,3 +9,13 @@ def pause():
 
 def get_current_time():
     return time.time()
+
+def short_text_smart(text, width):
+    if len(text) <= width:
+        return text
+    cut = text[:width - 3]
+    if ' ' in cut:
+        cut = cut.rsplit(' ', 1)[0]
+    return cut + "..."
+
+        
