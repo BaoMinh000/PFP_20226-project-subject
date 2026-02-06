@@ -1,7 +1,9 @@
 ﻿# PFP_20226-project-subject
 
 Guide: Enter "npm start" in CMD
-  EX: C:\Project_assignment> npm start
+
+```bash
+C:\Project_assignment> npm start
       
       > python-runner@1.0.0 start
       > python main.py
@@ -22,4 +24,5 @@ Guide: Enter "npm start" in CMD
       0. Exit
       ============================================
       Enter your choice:
+
 
