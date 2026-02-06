@@ -19,7 +19,8 @@ def main():
         books = []
     
     print("Welcome to the Student Management System!")
-    # print("list students: ", students)
+    for book in books:
+        print(book)
     while True:
         show_menu()
         choice = input("Enter your choice: ")

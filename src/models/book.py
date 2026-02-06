@@ -1,13 +1,13 @@
 class Book:
-    def __init__(self, book_id, title, author, category, publication_year, current_borrower):
+    def __init__(self, book_id, title, author, category, publication_year, is_available, borrow_count):
         self.book_id = book_id                  # Mã sách (duy nhất)
         self.title = title                # Tên sách
         self.author = author              # Tác giả
         self.category = category          # Thể loại
         self._publication_year = publication_year  # Năm xuất bản (ẩn)
-        self._is_available = True         # Trạng thái mượn/trả
-        self.borrow_count = 0             # Số lần được mượn
-        self.current_borrower = current_borrower or None      # Người đang mượn sách (nếu có)
+        self._is_available = is_available         # Trạng thái mượn/trả
+        self.borrow_count = borrow_count             # Số lần được mượn
+        # self.current_borrower = current_borrower or None      # Người đang mượn sách (nếu có)
         
     @property
     def is_available(self):
