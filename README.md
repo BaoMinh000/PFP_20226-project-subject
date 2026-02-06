@@ -2,9 +2,9 @@
 
 Guide: Enter "npm start" in CMD
   EX: C:\Project_assignment> npm start
+      
       > python-runner@1.0.0 start
       > python main.py
-      
       Loading book data...
       Please wait...
       Welcome to the Student Management System!
@@ -22,3 +22,4 @@ Guide: Enter "npm start" in CMD
       0. Exit
       ============================================
       Enter your choice:
+
