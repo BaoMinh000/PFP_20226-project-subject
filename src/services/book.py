@@ -1,33 +1,32 @@
 from src.services.file_io import save_to_file
 from src.models.book import Book 
 from src.configs.config import DATA_BOOKS_FILE
+from src.utils.util import generate_book_id
 
 def add_book(books):
     # self.books.append(book)
     print("Adding a new book...")
-    book_id = len(books) + 1  # Simple ID generation
-    # Check for unique book_id
-    for i, book in enumerate(books):
-        if str(int(i)+1) != str(book.book_id):
-            book_id = int(i)+1
-            break
     
+    book_id = generate_book_id(books)
+
+    print(f"Empty fields will cancel the adding process.")
     while True:
-        title  = input("Enter book title: ")
-        author = input("Enter book author: ")
-        category = input("Enter book category: ")
-        publication_year = input("Enter publication year: ")
-            
-        if book_id and title and author and category and publication_year : 
+        title = input("Enter book title: ").strip()
+        author = input("Enter book author: ").strip()
+        category = input("Enter book category: ").strip()
+        publication_year = input("Enter publication year: ").strip()
+
+        if title and author and category and publication_year:
             break
         else:
-            cancel = input("Do you want cancel adding book? (y/n): ")
-            if cancel.lower() == 'y':
+            cancel = input("Do you want cancel adding book? (y/n): ").strip().lower()
+            if cancel == 'y':
                 return
             print("All fields are required. Please try again.")
+
     
     # Create and add the new book
-    new_book = Book(book_id, title, author, category, publication_year, None, None)
+    new_book = Book(book_id, title, author, category, publication_year, True, 0)
     books.append(new_book)
     
     # Save to file
@@ -38,9 +37,6 @@ def add_book(books):
     else:
         print("Failed to save data.")
 
-# def update_book(library_manager, books):
-#     pass
-
 def delete_book(books):
     print("Deleting a book...")
     book_id = input("Enter the Book ID to delete: ")
@@ -49,6 +45,10 @@ def delete_book(books):
         return
     for book in books:
         if str(book.book_id) == book_id:
+            # Check if the book is currently borrowed
+            if book.is_available == False:
+                print(f"Cannot delete '{book.title}' as it is currently borrowed.")
+                return
             books.remove(book)
             save_to_file(books, DATA_BOOKS_FILE)
             print(f"Book ID {book_id} deleted successfully.")
@@ -60,8 +60,10 @@ def display_books(books):
         print("No books in the system.")
         return
 
-    # for i, book in enumerate(books):
-    #     print(f"i: {i} - {book}")
+    books = sort_books(books,"id","asc")
+    
+    if books is None:
+        return
     
     print("=" * 132)
     print("📚 BOOK LIST".center(125))
@@ -76,6 +78,7 @@ def display_books(books):
         f"| {'Year':<10}"
         f"| {'Status':<13}"
         f"| {'Borrowed':<10} |"
+        # f"| {'Borrower':<20} |"
     )
 
     line = "+" + "-" * (len(header) - 2) + "+"
@@ -93,6 +96,7 @@ def display_books(books):
             f"| {book._publication_year:<10}"
             f"| {'Available' if book.is_available else 'Borrowed':<13}"
             f"| {book.borrow_count:<10} |"
+            # f"| {book.current_borrower if book.current_borrower else 'None':<20} |"
         )
 
     print(line)
@@ -121,38 +125,37 @@ def search_books(books):
     print("Enter search criteria (leave blank to skip):")
     print("1. Title/Author/Category keyword")
     title = input("Enter a keyword to search (title): ").strip().lower()
-    Author = input("Enter a keyword to search (Author): ").strip().lower()
-    Category = input("Enter a keyword to search (Category): ").strip().lower()
-    if not title and not Author and not Category:
+    author = input("Enter a keyword to search (Author): ").strip().lower()
+    category = input("Enter a keyword to search (Category): ").strip().lower()
+    
+    # check if all inputs are empty -> return
+    if not title and not author and not category:
         print("No search criteria provided.")
         return
+
+    results = books
+
     if title:
         print(f"Searching by title containing: {title}")
-    if Author:
-        print(f"Searching by author containing: {Author}")
-    if Category:
-        print(f"Searching by category containing: {Category}")
-    results = books
-    
-    for book in results:
-        if title:
-            new_list = []
-            for book in results:
-                if title.strip().lower() in book.title.lower():
-                    new_list.append(book)
-            results = new_list
-        if Author:
-            new_list = []
-            for book in results:
-                if Author.strip().lower() in book.author.lower():
-                    new_list.append(book)
-            results = new_list
-        if Category:
-            new_list = []
-            for book in results:
-                if Category.strip().lower() in book.category.lower():
-                    new_list.append(book)
-            results = new_list
+        new_list = []
+        for book in results:
+            if title in book.title.lower():
+                new_list.append(book)
+        results = new_list
+    if author:
+        print(f"Searching by author containing: {author}")
+        new_list = []
+        for book in results:
+            if author in book.author.lower():
+                new_list.append(book)
+        results = new_list
+    if category:
+        print(f"Searching by category containing: {category}")
+        new_list = []
+        for book in results:
+            if category in book.category.lower():
+                new_list.append(book)
+        results = new_list
     
     if results:
         print(f"Found {len(results)} matching books:")
@@ -162,36 +165,46 @@ def search_books(books):
         
 def borrow_book(books):
     print("Borrowing a book...")
-    book_id = input("Enter the Book ID to borrow: ")
-    for book in books:
-        if str(book.book_id) == book_id:
-            if book.is_available:
-                if book.borrow():
-                    print(f"Borrowed book: {book.title}")
-                    print("Updating data...")
-                    print(f"Data {book}")
-                    save_to_file(books, DATA_BOOKS_FILE)
-                else:
-                    print(f"Failed to borrow book: {book.title}")
-                    
+    book_id = input("Enter the Book ID to borrow: ").strip()
+    # Enter borrower info
+    borrower_name = input("Enter borrower name: ")
+    phone = input("Enter phone number: ")
+    borrower_info = f"{borrower_name} - {phone}"
+    
+    book = get_book_by_id(books, book_id)
+
+    if book and borrower_name and phone:   
+        if borrower_name.strip() == "" or phone.strip() == "":
+            print("Borrower name and phone number cannot be empty.")
+            return 
+        if book.is_available:
+            if book.borrow(borrower_info):
+                print(f"Borrowed book: {book.title}")
+                print("Updating data...")
+                print(f"Data {book}")
+                save_to_file(books, DATA_BOOKS_FILE)
             else:
-                print(f"Sorry, '{book.title}' is currently not available.")
-            return
-    print(f"Book ID {book_id} not found.")
+                print(f"Failed to borrow book: {book.title}")
+                
+        else:
+            print(f"Sorry, '{book.title}' is currently not available.")
+    else:
+        print(f"Book ID {book_id} not found, cannot borrow.")
     
 def return_book(books):
     print("Returning a book...")
-    book_id = input("Enter the Book ID to return: ")
-    for book in books:
-        if str(book.book_id) == book_id:
-            if not book.is_available:
-                book.return_book()
-                save_to_file(books, DATA_BOOKS_FILE)
-                print(f"You have successfully returned '{book.title}'.")
-            else:
-                print(f"'{book.title}' was not borrowed.")
-            return
-    print(f"Book ID {book_id} not found.")
+    book_id = input("Enter the Book ID to return: ").strip()
+    book = get_book_by_id(books, book_id)
+    if book:
+        if not book.is_available:
+            book.return_book()
+            save_to_file(books, DATA_BOOKS_FILE)
+            print(f"You have successfully returned '{book.title}'.")
+        else:
+            print(f"'{book.title}' was not borrowed.")
+        return
+    else:
+        print(f"Book ID {book_id} not found.")
     
 def list_borrowed_books(books):
     print("Listing borrowed books...")
@@ -202,6 +215,53 @@ def list_borrowed_books(books):
         print("No books are currently borrowed.")
         
 def list_most_borrowed_books(books):
-    print("Listing most borrowed books...")
-    sorted_books = sorted(books, key=lambda b: b.borrow_count, reverse=True)
-    display_books(sorted_books[:5])  # Display top 5 most borrowed books
+    if not books:
+        print("No books in the system.")
+        return
+
+    temp_books = books[:]   # copy list
+
+    # sort descending by borrow_count
+    for i in range(len(temp_books)):
+        for j in range(i + 1, len(temp_books)):
+            if temp_books[j].borrow_count > temp_books[i].borrow_count:
+                temp_books[i], temp_books[j] = temp_books[j], temp_books[i]
+
+    display_books(temp_books[:5])
+
+def sort_books(books, condition, order):
+    sorted_books = books[:]   # copy list
+    reverse = (order == "desc")
+
+    if condition == "id":
+        sorted_books.sort(key=book_sort_key_id, reverse=reverse)
+        save_to_file(sorted_books, DATA_BOOKS_FILE)
+    elif condition == "author":
+        sorted_books.sort(key=book_sort_key_author, reverse=reverse)
+    elif condition == "title":
+        sorted_books.sort(key=book_sort_key_title, reverse=reverse)
+    elif condition == "year":
+        sorted_books.sort(key=book_sort_key_year, reverse=reverse)
+    else:
+        return None
+
+    return sorted_books
+
+
+     
+def get_book_by_id(books, book_id):
+    for book in books:
+        if str(book.book_id) == str(book_id):
+            return book
+    return None
+    
+def book_sort_key_title(book):
+    return book.title.lower()
+def book_sort_key_author(book):
+    return book.author.lower()
+def book_sort_key_year(book):
+    return book._publication_year
+def book_sort_key_borrow_count(book):
+    return book.borrow_count
+def book_sort_key_id(book):
+    return book.book_id

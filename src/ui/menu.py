@@ -11,3 +11,10 @@ def show_menu():
     print("9. Statistics & Reports")
     print("0. Exit")
     print("============================================")
+def show_statistics_menu():
+    print("\n------ STATISTICS & REPORTS ------")
+    print("1. List most borrowed books")
+    print("2. Total number of books")
+    print("3. Total borrowed books")
+    print("0. Back to main menu")
+    print("---------------------------------")

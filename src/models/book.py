@@ -1,31 +1,46 @@
 class Book:
-    def __init__(self, book_id, title, author, category, publication_year, is_available, borrow_count):
-        self.book_id = book_id                  # Mã sách (duy nhất)
-        self.title = title                # Tên sách
-        self.author = author              # Tác giả
-        self.category = category          # Thể loại
-        self._publication_year = publication_year  # Năm xuất bản (ẩn)
-        self._is_available = is_available         # Trạng thái mượn/trả
-        self.borrow_count = borrow_count             # Số lần được mượn
-        # self.current_borrower = current_borrower or None      # Người đang mượn sách (nếu có)
+    def __init__(self, book_id, title, author, category, publication_year,
+                 is_available=True, borrow_count=0, current_borrower=None):
+
+        self.book_id = book_id
+        self.title = title
+        self.author = author
+        self.category = category
+        self._publication_year = publication_year
+        self._is_available = is_available
+        self.borrow_count = borrow_count
+        # self.current_borrower = current_borrower   # None nếu chưa ai mượn
         
     @property
     def is_available(self):
         return self._is_available
     
-    def borrow(self):
+    def borrow(self, borrower_info):
         if self._is_available:
             self._is_available = False
             self.borrow_count += 1
+            # self.current_borrower = borrower_info
             return True
         return False
     
+    def get_borrow_count(self):
+        return self.borrow_count
+    
     def return_book(self):
         self._is_available = True
+        # self.current_borrower = None        # xóa người mượn
     
     def __str__(self):
-        if self._is_available:
-            availability = "Available"
-        else:
-            availability = "Borrowed"
-        return f"Book ID: {self.book_id}, Title: {self.title}, Author: {self.author}, Category: {self.category}, Year: {self._publication_year}, Status: {availability}, Borrowed: {self.borrow_count} times"
+        status = "Available" if self._is_available else "Borrowed"
+        # borrower = self.current_borrower if self.current_borrower else "None"
+
+        return (
+            f"Book ID: {self.book_id}, "
+            f"Title: {self.title}, "
+            f"Author: {self.author}, "
+            f"Category: {self.category}, "
+            f"Year: {self._publication_year}, "
+            f"Status: {status}, "
+            f"Borrow count: {self.borrow_count}, "
+            # f"Borrower: {borrower}"
+        )
