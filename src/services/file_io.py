@@ -1,5 +1,3 @@
-# from src.models.student_model import Student
-from services import book
 from src.models.book import Book
 
 def save_to_file(books, filename):
